@@ -1,19 +1,27 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const saveAuth = async (data: {
-  access: string;
-  refresh: string;
-  role: string;
-  username: string;
-}) => {
-  await AsyncStorage.multiSet([
-    ["access", data.access],
-    ["refresh", data.refresh],
-    ["role", data.role],
-    ["username", data.username],
-  ]);
+const AUTH_KEY = "auth_data";
+
+export const saveAuth = async (data: any) => {
+  await AsyncStorage.setItem(
+    AUTH_KEY,
+    JSON.stringify(data)
+  );
 };
 
-export const getRole = async () => {
-  return await AsyncStorage.getItem("role");
+export const getAuth = async () => {
+  const data =
+    await AsyncStorage.getItem(
+      AUTH_KEY
+    );
+
+  return data
+    ? JSON.parse(data)
+    : null;
+};
+
+export const clearAuth = async () => {
+  await AsyncStorage.removeItem(
+    AUTH_KEY
+  );
 };
