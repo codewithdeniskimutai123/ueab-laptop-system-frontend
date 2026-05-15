@@ -1,119 +1,39 @@
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
-  Image,
-  ActivityIndicator,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 
-import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import Toast from "react-native-toast-message";
+import { useEffect, useState } from "react";
 
-import {
-  getProfile,
-  updateProfile,
-} from "../../services/profileService";
+import LogoutButton from "../../components/LogoutButton";
+import { getProfile } from "../../services/profileService";
 
-import {
-  SERVER_URL,
-} from "../../services/api";
+export default function StudentDashboard() {
+  const router = useRouter();
 
-export default function Profile() {
-  const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
   const [user, setUser] = useState<any>(null);
-
-  const [formData, setFormData] = useState({
-    username: "",
-    first_name: "",
-    last_name: "",
-    email: "",
-    student_id: "",
-    phone_number: "",
-  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProfile();
+    loadUser();
   }, []);
 
-  const fetchProfile = async () => {
+  const loadUser = async () => {
     try {
-      setLoading(true);
       const res = await getProfile();
-
-      console.log("PROFILE DATA FETCHED:", res);
-
-      const data = res?.user ? res.user : res;
+      const data = res?.user ?? res;
       setUser(data);
-
-      // FIXED: Safeguard student_id parsing against literal string "null" or null values
-      setFormData({
-        username: String(data?.username || ""),
-        first_name: String(data?.first_name || ""),
-        last_name: String(data?.last_name || ""),
-        email: String(data?.email || ""),
-        student_id: data?.student_id && String(data.student_id) !== "null" ? String(data.student_id) : "",
-        phone_number: String(data?.phone_number || ""),
-      });
-    } catch (error) {
-      console.log("Profile component fetch error:", error);
-      Toast.show({
-        type: "error",
-        text1: "Failed to load profile",
-      });
+    } catch (err) {
+      console.log("DASHBOARD PROFILE ERROR:", err);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleChange = (field: keyof typeof formData, value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleUpdate = async () => {
-    try {
-      // Create copy of state values to sanitize
-      const payload: any = { ...formData };
-
-      // FIXED: Strip student_id out entirely for admins or if it is empty to stop Django 400 validation error
-      if (user?.role !== "student" || !payload.student_id.trim()) {
-        delete payload.student_id;
-      }
-
-      await updateProfile(payload);
-      
-      Toast.show({
-        type: "success",
-        text1: "Profile Updated",
-      });
-      setEditing(false);
-      fetchProfile();
-    } catch (error: any) {
-      console.log("Profile component update error details:", error);
-      
-      const backendErrorMsg = typeof error === "object" ? Object.values(error)[0] : "Update Failed";
-      
-      Toast.show({
-        type: "error",
-        text1: "Update Failed",
-        text2: Array.isArray(backendErrorMsg) ? backendErrorMsg[0] : String(backendErrorMsg),
-      });
-    }
-  };
-
-  const getProfilePhotoUri = () => {
-    if (!user?.profile_photo) return null;
-    if (user.profile_photo.startsWith("http://") || user.profile_photo.startsWith("https://")) {
-      return user.profile_photo;
-    }
-    return `${SERVER_URL}${user.profile_photo}`;
   };
 
   if (loading) {
@@ -126,135 +46,109 @@ export default function Profile() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#0B1220]">
-      <ScrollView className="px-5 pt-6">
+      <ScrollView className="px-5 pt-5">
 
-        {/* HEADER */}
         <View className="flex-row justify-between items-center mb-6">
-          <Text className="text-white text-3xl font-bold">
-            My Profile
-          </Text>
 
-          {!editing && (
-            <TouchableOpacity onPress={() => setEditing(true)}>
-              <Ionicons name="create-outline" size={28} color="white" />
-            </TouchableOpacity>
-          )}
+          <View>
+            <Text className="text-gray-400 text-base">
+              Welcome 
+            </Text>
+
+            <Text className="text-white text-2xl font-bold">
+              {user?.username || "Student"}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => router.push("/(student)/profile")}
+            className="bg-[#111A2E] p-3 rounded-full"
+          >
+            <Ionicons name="person-outline" size={26} color="white" />
+          </TouchableOpacity>
+
         </View>
 
-        {!editing ? (
-          <View className="bg-[#111A2E] rounded-3xl p-6 mb-12">
+        <View className="bg-[#111A2E] rounded-3xl p-5 mb-6">
 
-            {getProfilePhotoUri() ? (
-              <View className="items-center mb-6">
-                <Image
-                  source={{ uri: getProfilePhotoUri()! }}
-                  className="w-32 h-32 rounded-full border-4 border-blue-500"
-                />
-              </View>
-            ) : (
-              <View className="items-center mb-6">
-                <View className="w-32 h-32 rounded-full bg-gray-700 items-center justify-center border-4 border-gray-600">
-                  <Ionicons name="person" size={48} color="#94A3B8" />
-                </View>
-              </View>
-            )}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-white text-xl font-bold">
+              My Laptop
+            </Text>
 
-            <ProfileField label="Username" value={user?.username} />
-            <ProfileField label="First Name" value={user?.first_name} />
-            <ProfileField label="Last Name" value={user?.last_name} />
-            <ProfileField label="Email" value={user?.email} />
-            {/* FIXED: Conditionally displays field fallback layout cleanly */}
-            <ProfileField label="Student ID" value={user?.student_id && String(user.student_id) !== "null" ? user.student_id : "Not Applicable"} />
-            <ProfileField label="Phone Number" value={user?.phone_number} />
-            <ProfileField label="Role" value={user?.role} />
+            <Ionicons name="laptop-outline" size={28} color="#3B82F6" />
           </View>
-        ) : (
-          <View className="bg-[#111A2E] rounded-3xl p-6 mb-12">
-            
-            <InputField
-              label="Username"
-              value={formData.username}
-              onChangeText={(t) => handleChange("username", t)}
-            />
 
-            <InputField
-              label="First Name"
-              value={formData.first_name}
-              onChangeText={(t) => handleChange("first_name", t)}
-            />
+          <Text className="text-gray-400 mt-2">
+            Assigned laptop information will appear here.
+          </Text>
 
-            <InputField
-              label="Last Name"
-              value={formData.last_name}
-              onChangeText={(t) => handleChange("last_name", t)}
-            />
+        </View>
 
-            <InputField
-              label="Email"
-              value={formData.email}
-              onChangeText={(t) => handleChange("email", t)}
-            />
+        <Text className="text-white text-xl font-bold mb-4">
+          Quick Actions
+        </Text>
 
-            {/* FIXED: Hide or disable student ID input entirely if user is an admin */}
-            {user?.role === "student" && (
-              <InputField
-                label="Student ID"
-                value={formData.student_id}
-                onChangeText={(t) => handleChange("student_id", t)}
-              />
-            )}
+        <View className="flex-row flex-wrap justify-between">
 
-            <InputField
-              label="Phone Number"
-              value={formData.phone_number}
-              onChangeText={(t) => handleChange("phone_number", t)}
-            />
+          <DashboardCard
+            title="My Laptop"
+            icon="laptop-outline"
+            onPress={() => router.push("/(student)/my-laptop")}
+          />
 
-            <View className="flex-row gap-3 mt-5">
-              <TouchableOpacity
-                className="flex-1 bg-red-500 p-4 rounded-2xl"
-                onPress={() => setEditing(false)}
-              >
-                <Text className="text-center text-white font-bold">Cancel</Text>
-              </TouchableOpacity>
+          <DashboardCard
+            title="My QR Code"
+            icon="qr-code-outline"
+            onPress={() => router.push("/(student)/qr-code")}
+          />
 
-              <TouchableOpacity
-                className="flex-1 bg-blue-500 p-4 rounded-2xl"
-                onPress={handleUpdate}
-              >
-                <Text className="text-center text-white font-bold">Save</Text>
-              </TouchableOpacity>
-            </View>
+          <DashboardCard
+            title="Transfer"
+            icon="swap-horizontal-outline"
+            onPress={() => router.push("/(student)/transfer-laptop")}
+          />
 
-          </View>
-        )}
+          <DashboardCard
+            title="Transactions"
+            icon="document-text-outline"
+            onPress={() => router.push("/(student)/transactions")}
+          />
+
+          <DashboardCard
+            title="Recent Activity"
+            icon="time-outline"
+            onPress={() => router.push("/(student)/recent-transactions")}
+          />
+
+          <DashboardCard
+            title="Profile"
+            icon="person-circle-outline"
+            onPress={() => router.push("/(student)/profile")}
+          />
+
+        </View>
+
+        <View className="mt-8 mb-10">
+          <LogoutButton />
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function ProfileField({ label, value }: { label: string; value: string }) {
+function DashboardCard({ title, icon, onPress }: any) {
   return (
-    <View className="mb-5 border-b border-gray-800 pb-2">
-      <Text className="text-gray-400 text-sm">{label}</Text>
-      <Text className="text-white text-base font-medium mt-1">
-        {value || "Not Set"}
-      </Text>
-    </View>
-  );
-}
+    <TouchableOpacity
+      onPress={onPress}
+      className="bg-[#111A2E] w-[48%] p-5 rounded-3xl mb-4"
+    >
+      <Ionicons name={icon} size={32} color="#3B82F6" />
 
-function InputField({ label, value, onChangeText }: { label: string; value: string; onChangeText: (t: string) => void }) {
-  return (
-    <View className="mb-4">
-      <Text className="text-gray-400 text-sm mb-1">{label}</Text>
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={`Enter ${label}`}
-        placeholderTextColor="#666"
-        className="bg-[#0B1220] text-white p-3 rounded-xl border border-gray-800"
-      />
-    </View>
+      <Text className="text-white font-semibold text-base mt-3">
+        {title}
+      </Text>
+    </TouchableOpacity>
   );
 }

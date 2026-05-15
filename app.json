@@ -12,6 +12,10 @@
       "supportsTablet": true
     },
     "android": {
+        "permissions": [
+          "WRITE_EXTERNAL_STORAGE",
+          "READ_EXTERNAL_STORAGE"
+        ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -39,7 +43,14 @@
           }
         }
       ],
-      "expo-barcode-scanner"
+      "expo-barcode-scanner",
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow this app to access your photos to display laptop QR codes.",
+          "savePhotosPermission": "Allow this app to save laptop QR codes to your library."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
