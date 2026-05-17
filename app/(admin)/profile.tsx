@@ -7,21 +7,17 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-
 import { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
+import { useRouter } from "expo-router";
 
-import {
-  getProfile,
-  updateProfile,
-} from "../../../services/profileService";
+import { getProfile, updateProfile } from "../../services/profileService";
+import { SERVER_URL } from "../../services/api";
 
-import { SERVER_URL } from "../../../services/api";
-import { router } from "expo-router";
-
-export default function Profile() {
+export default function AdminProfile() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -42,10 +38,10 @@ export default function Profile() {
   const fetchProfile = async () => {
     try {
       setLoading(true);
-
       const res = await getProfile();
-      const data = res?.user ?? res;
+      console.log("ADMIN PROFILE DATA:", res);
 
+      const data = res?.user ?? res;
       setUser(data);
 
       setFormData({
@@ -63,7 +59,7 @@ export default function Profile() {
       console.log("PROFILE ERROR:", error);
       Toast.show({
         type: "error",
-        text1: "Failed to load profile",
+        text1: "Failed to load profile parameters",
       });
     } finally {
       setLoading(false);
@@ -77,33 +73,26 @@ export default function Profile() {
   const handleUpdate = async () => {
     try {
       await updateProfile(formData);
-
       Toast.show({
         type: "success",
-        text1: "Profile Updated",
+        text1: "Profile Updated Successfully",
       });
-
       setEditing(false);
       fetchProfile();
     } catch (error) {
       console.log("UPDATE ERROR:", error);
-
       Toast.show({
         type: "error",
-        text1: "Update Failed",
+        text1: "Update Operation Failed",
       });
     }
   };
 
   const getProfilePhoto = () => {
     if (!user?.profile_photo) return null;
-
-    if (
-      user.profile_photo.startsWith("http")
-    ) {
+    if (user.profile_photo.startsWith("http")) {
       return user.profile_photo;
     }
-
     return `${SERVER_URL}${user.profile_photo}`;
   };
 
@@ -117,83 +106,85 @@ export default function Profile() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#0B1220]">
-      <ScrollView className="px-5 pt-6">
+      <ScrollView className="px-5 pt-6" showsVerticalScrollIndicator={false}>
 
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-white text-3xl font-bold">
-            My Profile
+            Admin Profile
           </Text>
 
           {!editing && (
-            <TouchableOpacity onPress={() => setEditing(true)}>
-              <Ionicons name="create-outline" size={28} color="white" />
+            <TouchableOpacity 
+              onPress={() => setEditing(true)}
+              className="bg-[#111A2E] p-3 rounded-full border border-slate-800"
+            >
+              <Ionicons name="create-outline" size={24} color="white" />
             </TouchableOpacity>
           )}
         </View>
 
         {!editing ? (
-          <View className="bg-[#111A2E] rounded-3xl p-6">
+          <View className="space-y-4">
+            <View className="bg-[#111A2E] rounded-3xl p-6 border border-slate-800 shadow-xl">
+              {getProfilePhoto() ? (
+                <Image
+                  source={{ uri: getProfilePhoto()! }}
+                  className="w-32 h-32 rounded-full border-4 border-blue-500 self-center mb-6"
+                />
+              ) : (
+                <View className="w-32 h-32 rounded-full bg-slate-800 self-center mb-6 items-center justify-center border border-slate-700">
+                  <Ionicons name="key-outline" size={48} color="#3B82F6" />
+                </View>
+              )}
 
-            {getProfilePhoto() ? (
-              <Image
-                source={{ uri: getProfilePhoto()! }}
-                className="w-32 h-32 rounded-full border-4 border-blue-500 self-center mb-6"
+              <ProfileField label="Account Username" value={user?.username} />
+              <ProfileField label="First Name" value={user?.first_name} />
+              <ProfileField label="Last Name" value={user?.last_name} />
+              <ProfileField label="Email Address" value={user?.email} />
+              <ProfileField
+                label="System Administrator ID"
+                value={user?.student_id && user.student_id !== "null" ? user.student_id : "SYS-ADMIN-ROOT"}
               />
-            ) : (
-              <View className="w-32 h-32 rounded-full bg-gray-700 self-center mb-6 items-center justify-center">
-                <Ionicons name="person" size={40} color="#ccc" />
-              </View>
-            )}
-
-            <ProfileField label="Username" value={user?.username} />
-            <ProfileField label="First Name" value={user?.first_name} />
-            <ProfileField label="Last Name" value={user?.last_name} />
-            <ProfileField label="Email" value={user?.email} />
-            <ProfileField
-              label="Student ID"
-              value={user?.student_id && user.student_id !== "null" ? user.student_id : "Not Assigned"}
-            />
-            <ProfileField label="Phone" value={user?.phone_number} />
-            <ProfileField label="Role" value={user?.role} />
+              <ProfileField label="Contact Phone" value={user?.phone_number} />
+              <ProfileField label="Privilege Level" value={user?.role?.toUpperCase() || "ADMINISTRATOR"} />
+            </View>
           </View>
         ) : (
-          <View className="bg-[#111A2E] rounded-3xl p-6">
-
+          <View className="bg-[#111A2E] rounded-3xl p-6 border border-slate-800 shadow-xl">
             <InputField label="Username" value={formData.username} onChangeText={(t) => handleChange("username", t)} />
             <InputField label="First Name" value={formData.first_name} onChangeText={(t) => handleChange("first_name", t)} />
             <InputField label="Last Name" value={formData.last_name} onChangeText={(t) => handleChange("last_name", t)} />
-            <InputField label="Email" value={formData.email} onChangeText={(t) => handleChange("email", t)} />
-            <InputField label="Student ID" value={formData.student_id} onChangeText={(t) => handleChange("student_id", t)} />
+            <InputField label="Email Address" value={formData.email} onChangeText={(t) => handleChange("email", t)} />
+            <InputField label="Administrator ID" value={formData.student_id} onChangeText={(t) => handleChange("student_id", t)} />
             <InputField label="Phone Number" value={formData.phone_number} onChangeText={(t) => handleChange("phone_number", t)} />
 
             <View className="flex-row gap-3 mt-5">
               <TouchableOpacity
-                className="flex-1 bg-red-500 p-4 rounded-2xl"
+                className="flex-1 bg-slate-800 p-4 rounded-2xl border border-slate-700"
                 onPress={() => setEditing(false)}
               >
-                <Text className="text-white text-center font-bold">Cancel</Text>
+                <Text className="text-gray-300 text-center font-bold">Cancel</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                className="flex-1 bg-blue-500 p-4 rounded-2xl"
+                className="flex-1 bg-blue-600 p-4 rounded-2xl"
                 onPress={handleUpdate}
               >
-                <Text className="text-white text-center font-bold">Save</Text>
+                <Text className="text-white text-center font-bold">Save Changes</Text>
               </TouchableOpacity>
             </View>
-
           </View>
         )}
-        <TouchableOpacity
-        onPress={() => router.push("/(student)")}
-        className="flex-row items-center justify-center bg-blue-500 p-4 rounded-2xl mt-6 mb-10"
-      >
-        <Ionicons name="home-outline" size={20} color="white" />
 
-        <Text className="text-white font-bold ml-2">
-          Back to Dashboard
-        </Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.replace("/(admin)")}
+          className="flex-row items-center justify-center bg-blue-600 p-4 rounded-2xl mt-6 mb-12 shadow-md shadow-blue-500/10"
+        >
+          <Ionicons name="apps-outline" size={20} color="white" />
+          <Text className="text-white font-bold ml-2">
+            Back to Admin Dashboard
+          </Text>
+        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>
@@ -202,10 +193,10 @@ export default function Profile() {
 
 function ProfileField({ label, value }: any) {
   return (
-    <View className="mb-4 border-b border-gray-700 pb-2">
-      <Text className="text-gray-400">{label}</Text>
-      <Text className="text-white text-base mt-1">
-        {value || "Not Set"}
+    <View className="mb-4 border-b border-slate-800/60 pb-2">
+      <Text className="text-gray-400 text-xs font-semibold uppercase tracking-wider">{label}</Text>
+      <Text className="text-white text-base mt-1 font-medium">
+        {value || "Not Assigned"}
       </Text>
     </View>
   );
@@ -214,13 +205,13 @@ function ProfileField({ label, value }: any) {
 function InputField({ label, value, onChangeText }: any) {
   return (
     <View className="mb-4">
-      <Text className="text-gray-400 mb-1">{label}</Text>
+      <Text className="text-gray-400 mb-1.5 text-xs font-semibold uppercase tracking-wider px-1">{label}</Text>
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        className="bg-[#0B1220] text-white p-3 rounded-xl"
+        className="bg-[#0B1220] text-white p-3 rounded-xl border border-slate-800 font-medium"
         placeholder={label}
-        placeholderTextColor="#666"
+        placeholderTextColor="#475569"
       />
     </View>
   );

@@ -2,7 +2,7 @@ import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from "reac
 import { useState } from "react";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
-
+import { Ionicons } from "@expo/vector-icons"; 
 import { loginUser } from "../../services/authService";
 import { saveAuth } from "../../services/authStorage";
 
@@ -31,7 +31,6 @@ export default function Login() {
         password: password,
       });
 
-      // save auth
       await saveAuth({
         access: res.access,
         refresh: res.refresh,
@@ -49,7 +48,6 @@ export default function Login() {
         text2: `Welcome back ${res.username}`,
       });
 
-      // ROLE ROUTING
       if (userRole === "student") {
         router.replace("/(student)");
       } else if (userRole === "security") {
@@ -118,6 +116,24 @@ export default function Login() {
             Login
           </Text>
         )}
+      </TouchableOpacity>
+      <View className="flex-row justify-center items-center my-5">
+        <Text className="text-gray-400 text-sm">Don't have an account? </Text>
+        <TouchableOpacity onPress={() => router.push("/register")}>
+          <Text className="text-blue-400 font-bold text-sm decoration-solid">
+            Register
+          </Text>
+        </TouchableOpacity>
+      </View>
+       
+        <TouchableOpacity
+        onPress={() => router.replace("/")}
+        className="bg-red-600 p-4 rounded-xl mt-3 flex-row items-center justify-center active:opacity-80"
+      >
+        <Ionicons name="home-outline" size={18} color="white" style={{ marginRight: 8 }} />
+        <Text className="text-white text-center font-bold">
+          Cancel & Return Home
+        </Text>
       </TouchableOpacity>
 
     </View>

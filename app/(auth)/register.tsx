@@ -166,7 +166,6 @@ export default function Register() {
           Create Account
         </Text>
 
-        {/* Username */}
         <View className="mt-4">
           <Text className="text-gray-400">Username *</Text>
           <TextInput
@@ -181,7 +180,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* First Name */}
         <View className="mt-4">
           <Text className="text-gray-400">First Name *</Text>
           <TextInput
@@ -196,7 +194,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* Last Name */}
         <View className="mt-4">
           <Text className="text-gray-400">Last Name *</Text>
           <TextInput
@@ -211,7 +208,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* Student ID */}
         <View className="mt-4">
           <Text className="text-gray-400">Student ID *</Text>
           <TextInput
@@ -226,7 +222,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* Email */}
         <View className="mt-4">
           <Text className="text-gray-400">Email *</Text>
           <TextInput
@@ -242,7 +237,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* Phone Number */}
         <View className="mt-4">
           <Text className="text-gray-400">Phone Number *</Text>
           <TextInput
@@ -258,7 +252,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* Profile Photo */}
         <View className="mt-4">
           <Text className="text-gray-400">Profile Photo *</Text>
           <TouchableOpacity onPress={pickImage} className="mt-2 items-start">
@@ -278,7 +271,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* Password */}
         <View className="mt-4">
           <Text className="text-gray-400">Password *</Text>
           <TextInput
@@ -294,7 +286,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* Confirm Password */}
         <View className="mt-4">
           <Text className="text-gray-400">Confirm Password *</Text>
           <TextInput
@@ -310,7 +301,6 @@ export default function Register() {
           )}
         </View>
 
-        {/* Submit Button */}
         <TouchableOpacity
           onPress={handleRegister}
           className="bg-blue-500 p-4 rounded-xl mt-6"
@@ -320,7 +310,6 @@ export default function Register() {
           </Text>
         </TouchableOpacity>
 
-        {/* ALREADY HAVE AN ACCOUNT NAVIGATION */}
         <View className="flex-row justify-center mt-6 mb-12">
           <Text className="text-gray-400">Already have an account? </Text>
           <TouchableOpacity onPress={() => router.push("/(auth)/login")}>

@@ -29,7 +29,7 @@ export default function SecurityDashboard() {
           </View>
           
           <TouchableOpacity
-            onPress={() => router.push("/(security)/profile")}
+            onPress={() => router.push("/(security)/profile/index")}
             activeOpacity={0.8}
             className="bg-blue-600/10 p-4 rounded-2xl border border-blue-500/20 shadow-xl"
           >
@@ -41,7 +41,7 @@ export default function SecurityDashboard() {
           Select an operational routing target below to audit student computing hardware, track temporary device transfers, or evaluate historical traffic metrics.
         </Text>
 
-        <Text className="text-white text-xs font-black tracking-widest uppercase mb-3 text-slate-400">
+        <Text className="text-xs font-black tracking-widest uppercase mb-3 text-slate-400">
           Gate Management
         </Text>
         
@@ -98,12 +98,12 @@ export default function SecurityDashboard() {
 
         </View>
 
-        <Text className="text-white text-xs font-black tracking-widest uppercase mb-3 text-slate-400">
+        <Text className="text-xs font-black tracking-widest uppercase mb-3 text-slate-400">
           Account Control
         </Text>
 
         <TouchableOpacity
-          onPress={() => router.push("/(security)/profile")}
+          onPress={() => router.push("/(security)/profile/index")}
           activeOpacity={0.8}
           className="bg-[#111A2E]/50 w-full p-4 rounded-2xl mb-4 border border-slate-800/60 flex-row items-center justify-between"
         >
